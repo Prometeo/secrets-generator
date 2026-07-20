@@ -1,17 +1,36 @@
-use std::env;
+use clap::{Parser, ValueEnum};
+
+#[derive(Clone, Debug, ValueEnum)]
+enum Variant {
+    Password,
+    UrlSafe,
+}
+
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    /// Type of secure string
+    #[arg(short, long, value_enum)]
+    variant: Variant,
+
+    /// Secure string length
+    #[arg(short, long, default_value_t = 8)]
+    length: usize,
+}
 
 fn main() {
-    // TODO: use clap
     let base_password_string: &str =
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789{}[]@#!$%^&*()<>~-/+=.,;";
     let url_safe_chars: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
 
-    let input = env::args().skip(1).take(2).collect::<Vec<String>>();
-    let string_type = input[0].as_str();
-    let size = input[1].parse::<usize>().unwrap();
-    match string_type {
-        "password" => println!("{}", generate_secure_string(base_password_string, size)),
-        "string" => println!("{}", generate_secure_string(url_safe_chars, size)),
+    let args = Args::parse();
+
+    match args.variant {
+        Variant::Password => println!(
+            "{}",
+            generate_secure_string(base_password_string, args.length)
+        ),
+        Variant::UrlSafe => println!("{}", generate_secure_string(url_safe_chars, args.length)),
         _ => println!("Invalid argument"),
     }
 }
